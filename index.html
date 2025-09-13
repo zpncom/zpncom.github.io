@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* --- Базовые стили (остаются без изменений) --- */
+        /* CSS-стили остаются без изменений */
         body {
             font-family: 'Roboto', sans-serif;
             margin: 0;
@@ -71,7 +71,7 @@
         }
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); /* Немного увеличим мин. ширину */
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 20px;
         }
         .card {
@@ -79,7 +79,7 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            display: flex; /* Для удобного расположения графика */
+            display: flex;
             flex-direction: column;
         }
         .card h3 {
@@ -95,12 +95,10 @@
         .card .status-ok { color: #2ecc71; }
         .card .status-warning { color: #f39c12; }
         .card .status-critical { color: #e74c3c; }
-
-        /* Стили для контейнера графика, чтобы он занимал доступное место */
         .chart-container {
             position: relative;
-            flex-grow: 1; /* График будет растягиваться */
-            min-height: 200px; /* Минимальная высота */
+            flex-grow: 1;
+            min-height: 200px;
             margin-top: 15px;
         }
         
@@ -118,7 +116,6 @@
     </style>
 </head>
 <body>
-
     <div class="sidebar">
         <h2>Мониторинг ЧПУ</h2>
         <ul>
@@ -159,8 +156,8 @@
 
             <div class="card">
                 <h3>Станок ЧПУ #3 - Линия "Гамма"</h3>
-                <p>Состояние: <span class="value status-ok">В работе</span></p>
-                <p>Вибрация инструмента (g): <span class="value">0.15g</span></p>
+                <p>Состояние: <span id="status3" class="value status-ok">Загрузка...</span></p>
+                <p>Вибрация инструмента: <span id="vibrationValue3" class="value">...</span></p>
                 <div class="chart-container">
                     <canvas id="vibrationChart3"></canvas>
                 </div>
@@ -179,55 +176,29 @@
     </div>
 
 <script>
-    // Ждем, пока вся страница загрузится, чтобы скрипт мог найти canvas элементы
     document.addEventListener('DOMContentLoaded', function () {
 
-        // === Общие настройки для "научного" вида графиков ===
+        // === Общие настройки для "научного" вида графиков (без изменений) ===
         const commonOptions = {
-            responsive: true, // График будет адаптироваться под размер контейнера
-            maintainAspectRatio: false, // Позволяет графику заполнить контейнер по высоте
+            responsive: true,
+            maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: false // Скрываем легенду (название линии данных) для чистоты
-                },
-                title: {
-                    display: true,
-                    font: {
-                        size: 16
-                    }
-                }
+                legend: { display: false },
+                title: { display: true, font: { size: 16 } }
             },
             scales: {
-                y: { // Настройки для оси Y (вертикальная)
+                y: {
                     beginAtZero: true,
-                    title: {
-                        display: true,
-                        font: {
-                            size: 12,
-                            weight: 'bold'
-                        }
-                    }
+                    title: { display: true, font: { size: 12, weight: 'bold' } }
                 },
-                x: { // Настройки для оси X (горизонтальная)
-                    title: {
-                        display: true,
-                        text: 'Время (ч)',
-                        font: {
-                            size: 12,
-                            weight: 'bold'
-                        }
-                    }
+                x: {
+                    title: { display: true, text: 'Время', font: { size: 12, weight: 'bold' } }
                 }
             },
-            elements: {
-                line: {
-                    tension: 0.3, // Сглаживание линии
-                    borderWidth: 2
-                }
-            }
+            elements: { line: { tension: 0.3, borderWidth: 2 } }
         };
 
-        // === Данные и конфигурация для каждого графика ===
+        // === Графики 1 и 2 остаются со статичными данными (без изменений) ===
 
         // 1. График Нагрузки (Станок #1)
         const ctxLoad1 = document.getElementById('loadChart1').getContext('2d');
@@ -244,7 +215,7 @@
                 }]
             },
             options: {
-                ...commonOptions, // Копируем общие настройки
+                ...commonOptions,
                 plugins: { ...commonOptions.plugins, title: { ...commonOptions.plugins.title, text: 'Динамика нагрузки двигателя' }},
                 scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, title: { ...commonOptions.scales.y.title, text: 'Нагрузка, %' }}}
             }
@@ -252,6 +223,7 @@
 
         // 2. График Температуры (Станок #2)
         const ctxTemp2 = document.getElementById('tempChart2').getContext('2d');
+        // ... (код для графика #2 без изменений) ...
         new Chart(ctxTemp2, {
             type: 'line',
             data: {
@@ -271,31 +243,69 @@
             }
         });
 
-        // 3. График Вибрации (Станок #3)
-        const ctxVibration3 = document.getElementById('vibrationChart3').getContext('2d');
-        new Chart(ctxVibration3, {
-            type: 'line',
-            data: {
-                labels: ['-6ч', '-5ч', '-4ч', '-3ч', '-2ч', '-1ч', 'Сейчас'],
-                datasets: [{
-                    label: 'Вибрация',
-                    data: [0.1, 0.12, 0.11, 0.13, 0.14, 0.12, 0.15],
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    fill: true
-                }]
-            },
-            options: {
-                ...commonOptions,
-                plugins: { ...commonOptions.plugins, title: { ...commonOptions.plugins.title, text: 'Уровень вибрации инструмента' }},
-                scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, title: { ...commonOptions.scales.y.title, text: 'Ускорение, g' }}}
-            }
-        });
 
-        // 4. График Эффективности (Общий)
+        // === ИЗМЕНЕНИЕ ЗДЕСЬ: График Вибрации (Станок #3) с загрузкой данных ===
+        const url = 'https://cnc.kovalev.team/get/3';
+        
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Сетевой ответ не был успешным: ' + response.statusText);
+                }
+                return response.json(); // Преобразуем ответ в формат JSON
+            })
+            .then(data => {
+                // Данные успешно получены, обрабатываем их
+                console.log('Получены данные:', data); // Для отладки в консоли браузера
+
+                // Обновляем текстовые поля
+                document.getElementById('status3').textContent = data.status;
+                const vibrationMetric = data.metrics.vibration;
+                document.getElementById('vibrationValue3').textContent = ${vibrationMetric.current}${vibrationMetric.unit};
+
+                // Готовим данные для графика
+                const labels = vibrationMetric.history.map(item => item.time);
+                const values = vibrationMetric.history.map(item => item.value);
+
+                // Рисуем график на основе полученных данных
+                const ctxVibration3 = document.getElementById('vibrationChart3').getContext('2d');
+                new Chart(ctxVibration3, {
+                    type: 'line',
+                    data: {
+                        labels: labels, // Подставляем метки времени из JSON
+                        datasets: [{
+                            label: 'Вибрация',
+                            data: values, // Подставляем значения вибрации из JSON
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        ...commonOptions,
+                        plugins: { ...commonOptions.plugins, title: { ...commonOptions.plugins.title, text: 'Уровень вибрации инструмента' }},
+                        scales: { 
+                            ...commonOptions.scales, 
+                            y: { ...commonOptions.scales.y, title: { ...commonOptions.scales.y.title, text: Ускорение, ${vibrationMetric.unit} }},
+                            x: { ...commonOptions.scales.x, title: { ...commonOptions.scales.x.title, text: 'Время' }}
+                         }
+                    }
+                });
+            })
+            .catch(error => {
+                // Если произошла ошибка при загрузке
+                console.error('Не удалось получить данные для станка #3:', error);
+                // Можно вывести сообщение об ошибке на самой карточке
+                const chartContainer = document.getElementById('vibrationChart3').parentElement;
+                chartContainer.innerHTML = '<p style="color: red; text-align: center;">Ошибка загрузки данных</p>';
+            });
+
+
+        // 4. График Эффективности (Общий) - без изменений
         const ctxEfficiency = document.getElementById('efficiencyChart').getContext('2d');
+        // ... (код для графика #4 без изменений) ...
         new Chart(ctxEfficiency, {
-            type: 'bar', // Используем столбчатую диаграмму
+            type: 'bar',
             data: {
                 labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
                 datasets: [{
@@ -316,7 +326,6 @@
                 }
             }
         });
-
     });
 </script>
 
