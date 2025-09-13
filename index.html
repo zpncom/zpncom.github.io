@@ -5,45 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мониторинг ЧПУ Станков - Завод "ТехноАвангард"</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* --- Базовые стили --- */
+        /* --- Базовые стили (остаются без изменений) --- */
         body {
             font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f0f2f5;
             color: #333;
-            display: flex; /* Для бокового меню и основного контента */
+            display: flex;
             min-height: 100vh;
         }
-
-        /* --- Сайдбар --- */
         .sidebar {
             width: 250px;
             background-color: #2c3e50;
             color: #ecf0f1;
             padding: 20px;
             box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-            flex-shrink: 0; /* Не сжимать сайдбар */
+            flex-shrink: 0;
             transition: transform 0.3s ease-in-out;
         }
-
         .sidebar h2 {
             text-align: center;
             color: #2ecc71;
             margin-bottom: 30px;
             font-size: 1.5em;
         }
-
-        .sidebar ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .sidebar ul li {
-            margin-bottom: 15px;
-        }
-
+        .sidebar ul { list-style: none; padding: 0; }
+        .sidebar ul li { margin-bottom: 15px; }
         .sidebar ul li a {
             color: #ecf0f1;
             text-decoration: none;
@@ -52,19 +42,15 @@
             border-radius: 5px;
             transition: background-color 0.2s ease;
         }
-
         .sidebar ul li a:hover,
         .sidebar ul li a.active {
             background-color: #34495e;
             color: #2ecc71;
         }
-
-        /* --- Основной контент --- */
         .main-content {
-            flex-grow: 1; /* Занимает всё оставшееся пространство */
+            flex-grow: 1;
             padding: 20px;
         }
-
         .header {
             background-color: #fff;
             padding: 20px;
@@ -75,40 +61,27 @@
             justify-content: space-between;
             align-items: center;
         }
-
-        .header h1 {
-            margin: 0;
-            color: #2c3e50;
-            font-size: 1.8em;
-        }
-
+        .header h1 { margin: 0; color: #2c3e50; font-size: 1.8em; }
         .status-indicator {
             padding: 8px 15px;
             border-radius: 20px;
             font-weight: bold;
             color: #fff;
-            background-color: #2ecc71; /* Зеленый - все ок */
+            background-color: #2ecc71;
         }
-
-        /* --- Секция с карточками показателей --- */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* 300px минимальная ширина, остальное поровну */
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); /* Немного увеличим мин. ширину */
             gap: 20px;
         }
-
         .card {
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.2s ease;
+            display: flex; /* Для удобного расположения графика */
+            flex-direction: column;
         }
-
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
         .card h3 {
             margin-top: 0;
             color: #34495e;
@@ -117,88 +90,31 @@
             padding-bottom: 10px;
             margin-bottom: 15px;
         }
+        .card p { margin: 5px 0; font-size: 0.95em; }
+        .card .value { font-size: 1.4em; font-weight: 700; color: #2c3e50; }
+        .card .status-ok { color: #2ecc71; }
+        .card .status-warning { color: #f39c12; }
+        .card .status-critical { color: #e74c3c; }
 
-        .card p {
-            margin: 5px 0;
-            font-size: 0.95em;
-        }
-
-        .card .value {
-            font-size: 1.4em;
-            font-weight: 700;
-            color: #2c3e50;
-        }
-
-        .card .status-ok { color: #2ecc71; } /* Зеленый */
-        .card .status-warning { color: #f39c12; } /* Оранжевый */
-        .card .status-critical { color: #e74c3c; } /* Красный */
-
-        /* --- Имитация графика --- */
-        .chart-placeholder {
-            height: 180px;
-            background-color: #ecf0f1;
-            border-radius: 5px;
+        /* Стили для контейнера графика, чтобы он занимал доступное место */
+        .chart-container {
+            position: relative;
+            flex-grow: 1; /* График будет растягиваться */
+            min-height: 200px; /* Минимальная высота */
             margin-top: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #7f8c8d;
-            font-style: italic;
-            border: 1px dashed #bdc3c7;
-            font-size: 0.9em;
         }
-
-        /* --- Адаптация для мобильных (Google Pixel и другие) --- */
+        
         @media (max-width: 768px) {
-            body {
-                flex-direction: column; /* Сайдбар сверху, потом контент */
-            }
-
-            .sidebar {
-                width: 100%;
-                height: auto;
-                padding: 15px 0;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-                order: -1; /* Поместить сайдбар сверху */
-                transform: translateX(0); /* Сброс для мобильной версии */
-            }
-
-            .sidebar h2 {
-                display: none; /* Убрать заголовок на мобильных */
-            }
-
-            .sidebar ul {
-                display: flex; /* Сделать меню горизонтальным */
-                justify-content: space-around;
-                flex-wrap: wrap; /* Если пунктов много, переносить на новую строку */
-            }
-
-            .sidebar ul li {
-                margin: 0 5px;
-            }
-
-            .sidebar ul li a {
-                padding: 8px 12px;
-                font-size: 0.9em;
-            }
-
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .header h1 {
-                margin-bottom: 10px;
-            }
-
-            .dashboard-grid {
-                grid-template-columns: 1fr; /* Одна колонка на узких экранах */
-            }
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; padding: 15px 0; order: -1; }
+            .sidebar h2 { display: none; }
+            .sidebar ul { display: flex; justify-content: space-around; flex-wrap: wrap; }
+            .sidebar ul li { margin: 0 5px; }
+            .sidebar ul li a { padding: 8px 12px; font-size: 0.9em; }
+            .header { flex-direction: column; align-items: flex-start; }
+            .header h1 { margin-bottom: 10px; }
+            .dashboard-grid { grid-template-columns: 1fr; }
         }
-
-        /* --- Меню-бургер для очень маленьких экранов, если сайдбар полноценный --- */
-        /* В данном решении сайдбар на мобильных сразу горизонтальный, так что бургер не нужен */
-        /* Если бы сайдбар полностью скрывался, можно было бы добавить кнопку */
     </style>
 </head>
 <body>
@@ -222,58 +138,187 @@
         </div>
 
         <div class="dashboard-grid">
+            
             <div class="card">
                 <h3>Станок ЧПУ #1 - Линия "Альфа"</h3>
                 <p>Состояние: <span class="value status-ok">В работе</span></p>
-                <p>Температура шпинделя: <span class="value">45°C</span></p>
                 <p>Нагрузка на двигатель: <span class="value">68%</span></p>
-                <p>Завершено деталей: <span class="value">1245</span></p>
-                <div class="chart-placeholder">График нагрузки (за 24ч)</div>
+                <div class="chart-container">
+                    <canvas id="loadChart1"></canvas>
+                </div>
             </div>
 
             <div class="card">
                 <h3>Станок ЧПУ #2 - Линия "Бета"</h3>
                 <p>Состояние: <span class="value status-warning">Требует внимания</span></p>
                 <p>Температура шпинделя: <span class="value">62°C</span></p>
-                <p>Нагрузка на двигатель: <span class="value">85%</span></p>
-                <p>Завершено деталей: <span class="value">870</span></p>
-                <div class="chart-placeholder">График температуры (за 24ч)</div>
+                <div class="chart-container">
+                    <canvas id="tempChart2"></canvas>
+                </div>
             </div>
 
             <div class="card">
                 <h3>Станок ЧПУ #3 - Линия "Гамма"</h3>
                 <p>Состояние: <span class="value status-ok">В работе</span></p>
-                <p>Температура шпинделя: <span class="value">48°C</span></p>
-                <p>Нагрузка на двигатель: <span class="value">72%</span></p>
-                <p>Завершено деталей: <span class="value">1502</span></p>
-                <div class="chart-placeholder">График производительности (за 24ч)</div>
+                <p>Вибрация инструмента (g): <span class="value">0.15g</span></p>
+                <div class="chart-container">
+                    <canvas id="vibrationChart3"></canvas>
+                </div>
             </div>
-
+            
             <div class="card">
                 <h3>Общая производительность</h3>
-                <p>Всего произведено: <span class="value">3617 деталей</span></p>
-                <p>Среднее время цикла: <span class="value">15.2 сек</span></p>
-                <p>Эффективность: <span class="value status-ok">92%</span></p>
-                <div class="chart-placeholder">Общий график эффективности</div>
+                <p>Эффективность (OEE): <span class="value status-ok">92%</span></p>
+                <p>Завершено деталей (шт/час): <span class="value">155</span></p>
+                 <div class="chart-container">
+                    <canvas id="efficiencyChart"></canvas>
+                </div>
             </div>
 
-            <div class="card">
-                <h3>Расход материалов</h3>
-                <p>Металл тип А: <span class="value">1200 кг</span></p>
-                <p>Пластик тип Б: <span class="value">350 кг</span></p>
-                <p>Остаток: <span class="value status-warning">Низкий (А)</span></p>
-                <div class="chart-placeholder">График расхода за неделю</div>
-            </div>
-
-            <div class="card">
-                <h3>Энергопотребление</h3>
-                <p>Текущее потребление: <span class="value">15.7 кВт</span></p>
-                <p>За сегодня: <span class="value">370 кВт/ч</span></p>
-                <p>Прогноз на месяц: <span class="value">9500 кВт/ч</span></p>
-                <div class="chart-placeholder">График потребления энергии</div>
-            </div>
         </div>
     </div>
+
+<script>
+    // Ждем, пока вся страница загрузится, чтобы скрипт мог найти canvas элементы
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // === Общие настройки для "научного" вида графиков ===
+        const commonOptions = {
+            responsive: true, // График будет адаптироваться под размер контейнера
+            maintainAspectRatio: false, // Позволяет графику заполнить контейнер по высоте
+            plugins: {
+                legend: {
+                    display: false // Скрываем легенду (название линии данных) для чистоты
+                },
+                title: {
+                    display: true,
+                    font: {
+                        size: 16
+                    }
+                }
+            },
+            scales: {
+                y: { // Настройки для оси Y (вертикальная)
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        font: {
+                            size: 12,
+                            weight: 'bold'
+                        }
+                    }
+                },
+                x: { // Настройки для оси X (горизонтальная)
+                    title: {
+                        display: true,
+                        text: 'Время (ч)',
+                        font: {
+                            size: 12,
+                            weight: 'bold'
+                        }
+                    }
+                }
+            },
+            elements: {
+                line: {
+                    tension: 0.3, // Сглаживание линии
+                    borderWidth: 2
+                }
+            }
+        };
+
+        // === Данные и конфигурация для каждого графика ===
+
+        // 1. График Нагрузки (Станок #1)
+        const ctxLoad1 = document.getElementById('loadChart1').getContext('2d');
+        new Chart(ctxLoad1, {
+            type: 'line',
+            data: {
+                labels: ['-6ч', '-5ч', '-4ч', '-3ч', '-2ч', '-1ч', 'Сейчас'],
+                datasets: [{
+                    label: 'Нагрузка',
+                    data: [65, 66, 70, 68, 71, 67, 68],
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    fill: true
+                }]
+            },
+            options: {
+                ...commonOptions, // Копируем общие настройки
+                plugins: { ...commonOptions.plugins, title: { ...commonOptions.plugins.title, text: 'Динамика нагрузки двигателя' }},
+                scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, title: { ...commonOptions.scales.y.title, text: 'Нагрузка, %' }}}
+            }
+        });
+
+        // 2. График Температуры (Станок #2)
+        const ctxTemp2 = document.getElementById('tempChart2').getContext('2d');
+        new Chart(ctxTemp2, {
+            type: 'line',
+            data: {
+                labels: ['-6ч', '-5ч', '-4ч', '-3ч', '-2ч', '-1ч', 'Сейчас'],
+                datasets: [{
+                    label: 'Температура',
+                    data: [50, 52, 51, 55, 58, 60, 62],
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    fill: true
+                }]
+            },
+            options: {
+                ...commonOptions,
+                plugins: { ...commonOptions.plugins, title: { ...commonOptions.plugins.title, text: 'Динамика температуры шпинделя' }},
+                scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, title: { ...commonOptions.scales.y.title, text: 'Температура, °C' }}}
+            }
+        });
+
+        // 3. График Вибрации (Станок #3)
+        const ctxVibration3 = document.getElementById('vibrationChart3').getContext('2d');
+        new Chart(ctxVibration3, {
+            type: 'line',
+            data: {
+                labels: ['-6ч', '-5ч', '-4ч', '-3ч', '-2ч', '-1ч', 'Сейчас'],
+                datasets: [{
+                    label: 'Вибрация',
+                    data: [0.1, 0.12, 0.11, 0.13, 0.14, 0.12, 0.15],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true
+                }]
+            },
+            options: {
+                ...commonOptions,
+                plugins: { ...commonOptions.plugins, title: { ...commonOptions.plugins.title, text: 'Уровень вибрации инструмента' }},
+                scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, title: { ...commonOptions.scales.y.title, text: 'Ускорение, g' }}}
+            }
+        });
+
+        // 4. График Эффективности (Общий)
+        const ctxEfficiency = document.getElementById('efficiencyChart').getContext('2d');
+        new Chart(ctxEfficiency, {
+            type: 'bar', // Используем столбчатую диаграмму
+            data: {
+                labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+                datasets: [{
+                    label: 'OEE',
+                    data: [88, 91, 93, 89, 92, 94, 92],
+                    backgroundColor: 'rgba(46, 204, 113, 0.7)',
+                    borderColor: 'rgba(39, 174, 96, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                ...commonOptions,
+                plugins: { ...commonOptions.plugins, title: { ...commonOptions.plugins.title, text: 'Общая эффективность оборудования (OEE) за неделю' }},
+                scales: { 
+                    ...commonOptions.scales, 
+                    y: { ...commonOptions.scales.y, title: { ...commonOptions.scales.y.title, text: 'Эффективность, %' }},
+                    x: { ...commonOptions.scales.x, title: { ...commonOptions.scales.x.title, text: 'День недели' }}
+                }
+            }
+        });
+
+    });
+</script>
 
 </body>
 </html>
